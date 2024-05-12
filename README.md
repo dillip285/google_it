@@ -80,3 +80,4 @@ print("Temperature:", weather_info.temperature)
 
 These are just a few examples of how you can use the `google_it` library to interact with Google search results and extract useful information. Check out the documentation for more functions and features!
 
+# google_it

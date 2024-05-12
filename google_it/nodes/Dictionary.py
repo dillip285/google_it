@@ -1,4 +1,4 @@
-from utils.constants import SELECTORS
+from utils.Constants import SELECTORS
 
 
 class Dictionary:
