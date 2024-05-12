@@ -1,6 +1,6 @@
 import json
 
-from utils import Utils, Constants
+from google_it.utils import Constants, Utils
 
 
 class PAA:
@@ -21,7 +21,7 @@ class PAA:
         items = []
 
         # Extract PAA items from the specified selectors
-        for item in Constants.SELECTORS.PAA:
+        for item in Constants.SELECTORS['PAA']:
             for el in soup.select(item):
                 items.append(el.text)
 
@@ -29,7 +29,7 @@ class PAA:
         items.pop(0)
 
         # Extract additional data from the raw data string
-        extra_data = json.loads(Utils.getStringBetweenStrings(data, 'var c=\'', '\';google') or '{}')
+        extra_data = json.loads(Utils.get_string_between_strings(data, 'var c=\'', '\';google') or '{}')
         rfs = extra_data.get('sb_wiz', {}).get('rfs', [])
 
         # Process and add additional PAA items

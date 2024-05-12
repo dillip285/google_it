@@ -1,4 +1,4 @@
-from utils import Constants
+from google_it.utils import Constants
 
 
 class Query:
@@ -33,7 +33,7 @@ class PAS:
         items = []
 
         # Iterate over each PAS item and extract title and thumbnail
-        for el in soup.select(Constants.SELECTORS.PASF):
+        for el in soup.select(Constants.SELECTORS['PASF']):
             data_src = el.get('data-src')
             alt = el.get('alt')
             if data_src:

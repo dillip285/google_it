@@ -1,7 +1,7 @@
-import MetadataItem
-import Social
-from utils import Utils
-from utils.Constants import SELECTORS
+from google_it.nodes.MetadataItem import MetadataItem
+from google_it.nodes.Social import Social
+from google_it.utils import Utils
+from google_it.utils.Constants import SELECTORS
 
 
 class KnowledgeGraph:
@@ -31,52 +31,158 @@ class KnowledgeGraph:
         - demonstration (str | None): The URL of the demonstration video associated with the knowledge graph.
         - lyrics (str | None): The lyrics associated with the knowledge graph.
         """
-        self.title = soup.select_one(SELECTORS.KNO_PANEL_TITLE[0]).text or \
-                     soup.select_one(SELECTORS.KNO_PANEL_TITLE[1]).text or \
-                     None
 
-        self.description = soup.select_one(SELECTORS.KNO_PANEL_DESCRIPTION[0]).text or \
-                           soup.select_one(SELECTORS.KNO_PANEL_DESCRIPTION[1]).find('span').text or \
-                           None
+        self.title = self._get_title(soup)
+        self.description = self._get_description(soup)
+        self.url = self._get_url(soup)
+        self.metadata = self._get_metadata(soup)
+        self.type = self._get_type(soup)
+        self.books = self._get_books(soup)
+        self.tv_shows_and_movies = self._get_tv_shows_and_movies(soup)
+        self.lyrics = self._get_lyrics(soup)
+        self.ratings = self._get_ratings(soup)
+        self.available_on = self._get_available_on(soup)
+        self.images = self._get_images(soup)
+        self.songs = self._get_songs(soup)
+        self.socials = self._get_socials(soup)
+        self.demonstration = self._get_demonstration(data)  # Implement if needed
 
-        self.url = soup.select_one(SELECTORS.KNO_PANEL_URL).get('href') or \
-                   soup.select_one(SELECTORS.KNO_PANEL_DESCRIPTION[1]).find('a').get('href') or \
-                   None
+    def _get_title(self, soup):
+        """Extracts title from the knowledge panel."""
+        title = None
+        for selector in SELECTORS['KNO_PANEL_TITLE']:
+            element = soup.select_one(selector)
+            if element:
+                title = element.text.strip() or None
+                break
+        return title
 
-        self.metadata = [MetadataItem({'title': el.get_text(strip=True), 'value': el.find_next().get_text(strip=True)})
-                         for el in soup.select(SELECTORS.KNO_PANEL_METADATA)]
+    def _get_description(self, soup):
+        """Extracts description from the knowledge panel."""
+        description = None
+        for selector in SELECTORS['KNO_PANEL_DESCRIPTION']:
+            element = soup.select_one(selector)
+            if element:
+                if element.find("span"):
+                    description = element.find("span").text.strip() or None
+                else:
+                    description = element.text.strip() or None
+                break
+        return description
 
-        self.type = soup.select(SELECTORS.KNO_PANEL_TYPE)[-1].get_text() if soup.select(
-            SELECTORS.KNO_PANEL_TYPE) else None
+    def _get_url(self, soup):
+        """Extracts URL from the knowledge panel."""
+        url = soup.select_one(SELECTORS['KNO_PANEL_URL'])
+        if url:
+            return url.get("href")
+        else:
+            description_element = soup.select_one(SELECTORS['KNO_PANEL_DESCRIPTION'][1])
+            if description_element and description_element.find("a"):
+                return description_element.find("a").get("href")
+        return None
 
-        self.books = [{'title': el.find_previous('div').find('span').text.strip(), 'year': el.get_text(strip=True)} for
-                      el in soup.select(SELECTORS.KNO_PANEL_BOOKS) if el.get_text(strip=True)]
+    # Implement similar methods for _get_metadata, _get_type, etc. following the pattern above
 
-        self.tv_shows_and_movies = [
-            {'title': el.find_previous('div').find('span').text.strip(), 'year': el.get_text(strip=True)} for el in
-            soup.select(SELECTORS.KNO_PANEL_TV_SHOWS_AND_MOVIES) if el.get_text(strip=True)]
+    def _get_metadata(self, soup):
+        metadata = []
+        elements = soup.select(SELECTORS['KNO_PANEL_METADATA'])
+        for index in range(0, len(elements), 2):
+            key = elements[index].text.strip()[:-1]
+            value = elements[index+1].text.strip()
+            if value:
+                metadata.append(MetadataItem(key, value))
+        return metadata
 
-        self.lyrics = '\n\n'.join([el.get_text() for el in soup.select(SELECTORS.KNO_PANEL_SONG_LYRICS)]) or None
+    def _get_type(self, soup):
+        knowledge_panel_type = soup.select_one(SELECTORS['KNO_PANEL_TYPE'])
+        if knowledge_panel_type:
+            type_text = knowledge_panel_type.text.strip()
+            if type_text != self.title:
+                return type_text
+        return None
 
-        self.ratings = [{'name': 'Google Users', 'rating': soup.select_one(
-            SELECTORS.KNO_PANEL_FILM_GOOGLEUSERS_RATING).get_text()}] if soup.select_one(
-            SELECTORS.KNO_PANEL_FILM_GOOGLEUSERS_RATING) else []
-        self.ratings += [{'name': el.get('title'), 'rating': el.get_text()} for el in
-                         soup.select(SELECTORS.KNO_PANEL_FILM_RATINGS[0])]
+    def _get_books(self, soup):
+        books = []
+        for element in soup.select(SELECTORS['KNO_PANEL_BOOKS']):
+            title_element = element.find_previous_sibling().find("div").find("span")
+            if title_element:
+                title = title_element.text.strip()
+            else:
+                title = None
+            year = element.find_next_sibling().text.strip()
+            if year:
+                books.append({"title": title, "year": year})
+        return books
 
-        self.available_on = [el.get_text(strip=True) for el in soup.select(SELECTORS.KNO_PANEL_AVAILABLE_ON)]
+    def _get_tv_shows_and_movies(self, soup):
+        # Similar logic to _get_books
+        tv_shows_and_movies = []
+        for element in soup.select(SELECTORS['KNO_PANEL_TV_SHOWS_AND_MOVIES']):
+            title_element = element.find_previous_sibling().find("div").find("span")
+            if title_element:
+                title = title_element.text.strip()
+            else:
+                title = None
+            year = element.find_next_sibling().text.strip()
+            if year:
+                tv_shows_and_movies.append({"title": title, "year": year})
+        return tv_shows_and_movies
 
-        self.images = [{'url': el.get('data-src'),
-                        'source': el.find_parent().find_parent().find_parent().find_parent().find_parent().get(
-                            'data-lpage')} for el in soup.select(SELECTORS.KNO_PANEL_IMAGES) if el.get('data-src')]
+    def _get_lyrics(self, soup):
+        lyrics_elements = soup.select(SELECTORS['KNO_PANEL_SONG_LYRICS'])
+        lyrics = []
+        for element in lyrics_elements:
+            html = element.text.strip()
+            # Process HTML to plain text with newline characters
+            lyrics.append(html.replace("<br aria-hidden=\"true\">", "\n")
+                          .replace("</span></div><div jsname=\".*\" class=\".*\"><span jsname=\".*\">", "\n\n")
+                          .replace("<br>", "\n"))
+        return "\n\n".join(lyrics) if lyrics else None
 
-        self.songs = [{'title': el.get_text(strip=True), 'album': el.find_next('span').text.strip()} for el in
-                      soup.select(SELECTORS.KNO_PANEL_SONGS)]
+    def _get_ratings(self, soup):
+        ratings = []
+        google_users_rating = soup.select_one(SELECTORS['KNO_PANEL_FILM_GOOGLEUSERS_RATING'])
+        if google_users_rating:
+            rating = google_users_rating.find_all("text")[0].strip() or None
+            ratings.append({"name": "Google Users", "rating": rating})
 
-        self.socials = [Social({'name': el.get_text(), 'url': el.get('href'), 'icon': el.find('img').get('src')}) for el
-                        in soup.select(SELECTORS.KNO_PANEL_SOCIALS)]
+        for i, element in enumerate(soup.select(SELECTORS['KNO_PANEL_FILM_RATINGS'][0])):
+            name = soup.select_one(SELECTORS['KNO_PANEL_FILM_RATINGS'][1])[i].get("title")
+            rating = element.text.strip()
+            ratings.append({"name": name, "rating": rating})
+        return ratings
 
-        self.demonstration = Utils.get_string_between_strings(data, 'source src\\x3d\\x22',
-                                                              '.mp4') + '.mp4' if Utils.get_string_between_strings(data,
-                                                                                                                   'source src\\x3d\\x22',
-                                                                                                                   '.mp4') else None
+    def _get_available_on(self, soup):
+        return [element.text.strip() for element in soup.select(SELECTORS['KNO_PANEL_AVAILABLE_ON'])]
+
+    def _get_images(self, soup):
+        images = []
+        for element in soup.select(SELECTORS['KNO_PANEL_IMAGES']):
+            url = element.get("data-src")
+            source = element.parent.parent.parent.parent.parent.get("data-lpage")
+            if url:
+                images.append({"url": url, "source": source})
+        return images
+
+    def _get_songs(self, soup):
+        songs = []
+        for element in soup.select(SELECTORS['KNO_PANEL_SONGS']):
+            title = element.text.strip()
+            album = element.find_next_sibling().find("span").text.strip()
+            songs.append({"title": title, "album": album})
+        return songs
+
+    def _get_socials(self, soup):
+        socials = []
+        for element in soup.select(SELECTORS['KNO_PANEL_SOCIALS']):
+            name = element.text.strip()
+            url = element.get("href")
+            icon = element.find("img").get("src")
+            socials.append(Social(name, url, icon))
+        return socials
+
+    def _get_demonstration(self, data):
+        return Utils.get_string_between_strings(data, 'source src\\x3d\\x22',
+                                                '.mp4') + '.mp4' if Utils.get_string_between_strings(data,
+                                                                                                     'source src\\x3d\\x22',
+                                                                                                     '.mp4') else None

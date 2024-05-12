@@ -1,4 +1,4 @@
-from utils import Constants
+from google_it.utils import Constants
 
 
 class Video:
@@ -32,7 +32,7 @@ class Videos:
         """
         videos = []
 
-        data = soup.select(Constants.SELECTORS.VIDEOS)
+        data = soup.select(Constants.SELECTORS['VIDEOS'])
 
         for elem in data:
             anchor_tag = elem.find('a')

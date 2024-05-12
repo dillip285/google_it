@@ -1,15 +1,25 @@
+import time
+
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlencode
 import json
 import random
 
-from nodes import (
-    OrganicResults, KnowledgeGraph, FeaturedSnippet,
-    Location, Translation, Dictionary, Videos, TopStories, Weather, Time, PAA, PAS, Converters
-)
-from utils import Constants
-from utils import Utils
+from google_it.nodes.Converters import Converters
+from google_it.nodes.Dictionary import Dictionary
+from google_it.nodes.FeaturedSnippet import FeaturedSnippet
+from google_it.nodes.KnowledgeGraph import KnowledgeGraph
+from google_it.nodes.Location import Location
+from google_it.nodes.OrganicResults import OrganicResults
+from google_it.nodes.PAA import PAA
+from google_it.nodes.PAS import PAS
+from google_it.nodes.Time import Time
+from google_it.nodes.TopStories import TopStories
+from google_it.nodes.Translation import Translation
+from google_it.nodes.Videos import Videos
+from google_it.nodes.Weather import Weather
+from google_it.utils import Utils, Constants
 
 
 def search(query, options={}):
@@ -32,8 +42,8 @@ def search(query, options={}):
             raise Utils.SearchError(
                 'Reverse image search by URL has been deprecated by Google. Please use a file instead.')
 
-        url = f"{Constants.URLS.GOOGLE}search?{_query}&ie=UTF-8&aomd=1{'&safe=active' if safe else ''}&start={page}"
-        response = requests.get(url, params=additional_params, headers=Utils.get_headers(mobile=use_mobile_ua),
+        url = f"{Constants.URLS['GOOGLE']}search?{_query}&ie=UTF-8&aomd=1{'&safe=active' if safe else ''}&start={page}"
+        response = requests.get(url, params=additional_params, headers=Utils.get_headers({'mobile': use_mobile_ua}),
                                 **axios_config)
 
     if response is None or response.status_code != 200:
@@ -51,7 +61,7 @@ def search(query, options={}):
     results['knowledge_panel'] = KnowledgeGraph(response.content, soup)
     results['featured_snippet'] = FeaturedSnippet(soup)
 
-    did_you_mean = soup.select_one(Constants.SELECTORS.DID_YOU_MEAN)
+    did_you_mean = soup.select_one(Constants.SELECTORS['DID_YOU_MEAN'])
     results['did_you_mean'] = did_you_mean.text if did_you_mean else None
 
     results['weather'] = Weather(soup, response.content)
@@ -71,7 +81,7 @@ def search(query, options={}):
 def upload_image(buffer, axios_config):
     form_data = {'encoded_image': buffer}
     headers = {'content-type': 'application/json', **Utils.get_headers(mobile=True)}
-    response = requests.post(f"{Constants.URLS.GIS}searchbyimage/upload", json=form_data, headers=headers,
+    response = requests.post(f"{Constants.URLS['GIS']}searchbyimage/upload", json=form_data, headers=headers,
                              **axios_config)
     return response
 
@@ -170,21 +180,21 @@ def image(query, options={}):
 
 
 def get_top_news(language='en', region='US'):
-    url = f"{Constants.URLS.GOOGLE_NEWS}topstories?tab=in&hl={language.lower()}-{region.upper()}&gl={region.upper()}&ceid={region.upper()}:{language.lower()}"
+    url = f"{Constants.URLS['GOOGLE_NEWS']}topstories?tab=in&hl={language.lower()}-{region.upper()}&gl={region.upper()}&ceid={region.upper()}:{language.lower()}"
     response = requests.get(url, headers=Utils.get_headers(mobile=True))
 
     if response.status_code != 200:
         raise Utils.SearchError('Could not retrieve top news: ' + response.text)
 
     soup = BeautifulSoup(response.content, 'html.parser')
-    headline_stories_publishers = [el.text for el in soup.select(Constants.SELECTORS.PUBLISHER)]
-    headline_stories_imgs = [el['src'] for el in soup.select(Constants.SELECTORS.STORY_IMG)]
-    headline_stories_time = [el.text for el in soup.select(Constants.SELECTORS.STORY_TIME)]
+    headline_stories_publishers = [el.text for el in soup.select(Constants.SELECTORS['PUBLISHER'])]
+    headline_stories_imgs = [el['src'] for el in soup.select(Constants.SELECTORS['STORY_IMG'])]
+    headline_stories_time = [el.text for el in soup.select(Constants.SELECTORS['STORY_TIME'])]
 
     results = {'headline_stories': []}
-    for i, el in enumerate(soup.select(Constants.SELECTORS.STORY_TITLE)):
+    for i, el in enumerate(soup.select(Constants.SELECTORS['STORY_TITLE'])):
         headline_stories_title = el.text
-        headline_stories_url = Constants.URLS.GOOGLE_NEWS + el['href'][2:]
+        headline_stories_url = Constants.URLS['GOOGLE_NEWS'] + el['href'][2:]
 
         results['headline_stories'].append({
             'title': headline_stories_title,

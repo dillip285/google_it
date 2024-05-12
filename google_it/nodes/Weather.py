@@ -1,4 +1,4 @@
-from utils import Constants
+from google_it.utils import Constants
 
 
 class Weather:
@@ -12,12 +12,20 @@ class Weather:
         - soup: BeautifulSoup object representing the HTML content.
         - data: String containing additional weather data.
         """
-        weather_location = soup.select_one(Constants.SELECTORS.WEATHER_LOCATION).get_text().strip() if soup else None
-        weather_forecast = soup.select_one(Constants.SELECTORS.WEATHER_FORECAST).get_text().strip() if soup else None
-        precipitation = soup.select_one(Constants.SELECTORS.PRECIPITATION).get_text().strip() if soup else None
-        air_humidity = soup.select_one(Constants.SELECTORS.AIR_HUMIDITY).get_text().strip() if soup else None
-        temperature = soup.select_one(Constants.SELECTORS.TEMPERATURE).get_text().strip() if soup else None
-        wind_speed = soup.select_one(Constants.SELECTORS.WIND_SPEED).get_text().strip() if soup else None
+        weather_location = soup.select_one(
+            Constants.SELECTORS['WEATHER_LOCATION']).get_text().strip() if soup.select_one(
+            Constants.SELECTORS['WEATHER_LOCATION']) else None
+        weather_forecast = soup.select_one(
+            Constants.SELECTORS['WEATHER_FORECAST']).get_text().strip() if soup.select_one(
+            Constants.SELECTORS['WEATHER_FORECAST']) else None
+        precipitation = soup.select_one(Constants.SELECTORS['PRECIPITATION']).get_text().strip() if soup.select_one(
+            Constants.SELECTORS['PRECIPITATION']) else None
+        air_humidity = soup.select_one(Constants.SELECTORS['AIR_HUMIDITY']).get_text().strip() if soup.select_one(
+            Constants.SELECTORS['AIR_HUMIDITY']) else None
+        temperature = soup.select_one(Constants.SELECTORS['TEMPERATURE']).get_text().strip() if soup.select_one(
+            Constants.SELECTORS['TEMPERATURE']) else None
+        wind_speed = soup.select_one(Constants.SELECTORS['WIND_SPEED']).get_text().strip() if soup.select_one(
+            Constants.SELECTORS['WIND_SPEED']) else None
 
         is_available = weather_location and weather_forecast
 
@@ -29,4 +37,5 @@ class Weather:
         self.wind = wind_speed if is_available else None
 
         # Extract image URL from data
-        self.image = data.split('wob_tci')[1].split('var s=\'')[1].split('\';')[0] if is_available and 'wob_tci' in data else None
+        self.image = data.split('wob_tci')[1].split('var s=\'')[1].split('\';')[
+            0] if is_available and 'wob_tci' in data else None

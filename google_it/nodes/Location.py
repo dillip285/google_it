@@ -1,4 +1,4 @@
-from utils.Constants import SELECTORS
+from google_it.utils.Constants import SELECTORS
 
 
 class Location:
@@ -16,9 +16,12 @@ class Location:
         - distance (str | None): The distance of the location.
         - map (str | None): The URL of the map image of the location.
         """
-        location_title = soup.select_one(SELECTORS.LOCATION_TITLE).get_text(strip=True)
-        location_distance = soup.select_one(SELECTORS.LOCATION_DISTANCE).get_text(strip=True)
-        location_image = soup.select_one(SELECTORS.LOCATION_IMAGE).get('src')
+        location_title = soup.select_one(SELECTORS['LOCATION_TITLE']).get_text(strip=True) if soup.select_one(
+            SELECTORS['LOCATION_TITLE']) else None
+        location_distance = soup.select_one(SELECTORS['LOCATION_DISTANCE']).get_text(strip=True) if soup.select_one(
+            SELECTORS['LOCATION_DISTANCE']) else None
+        location_image = soup.select_one(SELECTORS['LOCATION_IMAGE']).get('src') if soup.select_one(
+            SELECTORS['LOCATION_IMAGE']) else None
 
         is_available = location_title and location_distance
 

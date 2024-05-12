@@ -1,4 +1,4 @@
-from utils import Constants
+from google_it.utils import Constants
 
 
 class Time:
@@ -11,8 +11,8 @@ class Time:
         Parameters:
         - soup: BeautifulSoup object.
         """
-        hours = soup.select_one(Constants.SELECTORS.CURRENT_TIME_HOUR).get_text().strip()
-        dates = soup.select(Constants.SELECTORS.CURRENT_TIME_DATE)
+        hours = soup.select_one(Constants.SELECTORS['CURRENT_TIME_HOUR']).get_text().strip()
+        dates = soup.select(Constants.SELECTORS['CURRENT_TIME_DATE'])
         date = None
         if len(dates) >= 2:
             date = dates[1].get_text().strip()  # Assuming the second date is the one we need

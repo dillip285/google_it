@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 
-from utils import Constants
-from utils.Constants import SELECTORS
+from google_it.utils import Constants
+from google_it.utils.Constants import SELECTORS
 
 
 class OrganicResult:
@@ -43,9 +43,9 @@ class OrganicResults:
         """
         ad_indexes = []
 
-        titles = [el.get_text(strip=True) for el in soup.select(SELECTORS.TITLE)]
-        descriptions = [el.get_text(strip=True) for el in soup.select(SELECTORS.DESCRIPTION)]
-        urls = [el.get('href') for el in soup.select(SELECTORS.URL if is_mobile else f"{SELECTORS.TITLE} > a")]
+        titles = [el.get_text(strip=True) for el in soup.select(SELECTORS['TITLE'])]  # Corrected line
+        descriptions = [el.get_text(strip=True) for el in soup.select(SELECTORS['DESCRIPTION'])]
+        urls = [el.get('href') for el in soup.select(SELECTORS['URL'] if is_mobile else f"{SELECTORS['TITLE']} > a")]  # Corrected line
 
         if len(titles) < len(urls):
             urls.pop(0)
@@ -57,14 +57,14 @@ class OrganicResults:
 
         for i, url in enumerate(urls):
             if url and (url.startswith('/aclk') or url.startswith('/amp/s')):
-                urls[i] = f"{Constants.URLS.W_GOOGLE}{url[1:]}"
+                urls[i] = f"{Constants.URLS['W_GOOGLE']}{url[1:]}"  # Corrected line
 
         results = []
 
         for i, (title, description, url) in enumerate(zip(titles, descriptions, urls)):
             if url and (title or description):
-                high_res_favicon = f"{Constants.URLS.FAVICONKIT}/{urlparse(url).hostname}/192"
-                low_res_favicon = f"{Constants.URLS.W_GOOGLE}s2/favicons?sz=64&domain_url={urlparse(url).hostname}"
+                high_res_favicon = f"{Constants.URLS['FAVICONKIT']}/{urlparse(url).hostname}/192"  # Corrected line
+                low_res_favicon = f"{Constants.URLS['W_GOOGLE']}s2/favicons?sz=64&domain_url={urlparse(url).hostname}"  # Corrected line
 
                 results.append(OrganicResult(title, description, url, i in ad_indexes,
                                              {"high_res": high_res_favicon, "low_res": low_res_favicon}))

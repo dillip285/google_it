@@ -1,5 +1,5 @@
-from utils import Constants
-
+from google_it.utils import Constants
+from google_it.utils.Constants import SELECTORS
 
 class Item:
     """Class for representing an item."""
@@ -28,16 +28,16 @@ class TopStories:
         - List of Item objects representing the top stories.
         """
         # Removes unwanted text from the description
-        for selector in Constants.SELECTORS.TOP_STORIES_DESCRIPTION:
+        for selector in SELECTORS['TOP_STORIES_DESCRIPTION']:
             for el in soup.select(selector):
                 el.extract()
 
         top_stories_descriptions = [
-            el.get_text() for selector in Constants.SELECTORS.TOP_STORIES_DESCRIPTION
+            el.get_text() for selector in SELECTORS['TOP_STORIES_DESCRIPTION']
             for el in soup.select(selector)
         ]
         top_stories_urls = [
-            el['href'] for el in soup.select(Constants.SELECTORS.TOP_STORIES_URL)
+            el['href'] for el in soup.select(SELECTORS['TOP_STORIES_URL'])
         ]
 
         items = []
